@@ -1,4 +1,5 @@
 import { ShieldCheckIcon } from "lucide-react";
+import { NextStep } from "@/components/copper/next-step";
 import { getPrivacySummary } from "@/lib/copper/catalog";
 
 // How Copper handles recordings, in the catalog's own words (the official
@@ -33,6 +34,12 @@ export function Privacy() {
             </li>
           ))}
         </ul>
+        <NextStep
+          text="Ready to choose your Copper?"
+          href="#products"
+          label="See the devices"
+          className="bg-card"
+        />
       </div>
     </section>
   );

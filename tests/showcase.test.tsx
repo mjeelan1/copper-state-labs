@@ -27,4 +27,17 @@ describe("Showcase", () => {
       expect(caption?.textContent?.trim()).toBeTruthy();
     });
   });
+
+  it("links each photo back to its product", () => {
+    render(<Showcase />);
+    const figures = screen.getAllByRole("figure");
+    const names = getProducts().flatMap((product) =>
+      product.lifestyle.map(() => product.name),
+    );
+    names.forEach((name, index) => {
+      expect(
+        within(figures[index]).getByRole("link", { name: `See ${name}` }),
+      ).toHaveAttribute("href", "#products");
+    });
+  });
 });

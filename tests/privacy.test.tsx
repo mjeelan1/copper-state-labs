@@ -29,6 +29,13 @@ describe("Privacy", () => {
     expect(section).not.toHaveTextContent(/never\s+record/i);
   });
 
+  it("links back to the devices", () => {
+    render(<Privacy />);
+    expect(
+      screen.getByRole("link", { name: "See the devices" }),
+    ).toHaveAttribute("href", "#products");
+  });
+
   it("follows the catalog when the policy changes", async () => {
     vi.resetModules();
     vi.doMock("@/lib/copper/catalog", async (importOriginal) => {

@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { Hero } from "@/components/copper/hero";
-import { getProducts } from "@/lib/copper/catalog";
+import { formatUsd, getProducts } from "@/lib/copper/catalog";
 
 describe("Hero", () => {
   it("has the headline, the tagline and a See products link", () => {
@@ -13,6 +13,20 @@ describe("Hero", () => {
     expect(screen.getByRole("link", { name: "See products" })).toHaveAttribute(
       "href",
       "#products",
+    );
+  });
+
+  it("has a Compare plans link and a price hint from the catalog", () => {
+    render(<Hero />);
+    expect(screen.getByRole("link", { name: "Compare plans" })).toHaveAttribute(
+      "href",
+      "#plus",
+    );
+    const lowest = Math.min(
+      ...getProducts().map((product) => product.priceUsd),
+    );
+    expect(screen.getByTestId("hero")).toHaveTextContent(
+      `From ${formatUsd(lowest)}. No subscription needed.`,
     );
   });
 

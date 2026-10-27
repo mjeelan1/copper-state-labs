@@ -1,4 +1,4 @@
-import { render, screen, within } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { PlusPricing } from "@/components/copper/plus-pricing";
 import {
@@ -43,6 +43,43 @@ describe("PlusPricing", () => {
         plan.refinedAnswers ? /Included$/ : /Not included$/,
       );
     }
+  });
+
+  it("switches between monthly and annual billing, keeping both prices", () => {
+    const { container } = render(<PlusPricing />);
+    const plus = getPlans().find((plan) => plan.monthlyUsd > 0)!;
+    const card = container.querySelector<HTMLElement>(
+      `[data-plan="${plus.id}"]`,
+    )!;
+    const saving =
+      Math.round((plus.monthlyUsd * 12 - plus.annualUsd) * 100) / 100;
+    const percent = Math.round((saving / (plus.monthlyUsd * 12)) * 100);
+    const monthly = screen.getByRole("button", { name: "Monthly" });
+    const annual = screen.getByRole("button", {
+      name: `Annual · save ${percent}%`,
+    });
+
+    expect(monthly).toHaveAttribute("aria-pressed", "true");
+    expect(card).toHaveTextContent(`${formatUsd(plus.monthlyUsd)}/month`);
+    expect(card).toHaveTextContent(
+      `or ${formatUsd(plus.annualUsd)}/year · save ${formatUsd(saving)}`,
+    );
+
+    fireEvent.click(annual);
+    expect(annual).toHaveAttribute("aria-pressed", "true");
+    expect(monthly).toHaveAttribute("aria-pressed", "false");
+    const perMonth = Math.round((plus.annualUsd / 12) * 100) / 100;
+    expect(card).toHaveTextContent(`${formatUsd(plus.annualUsd)}/year`);
+    expect(card).toHaveTextContent(
+      `That’s ${formatUsd(perMonth)}/month · or ${formatUsd(plus.monthlyUsd)} monthly`,
+    );
+  });
+
+  it("links on to the privacy promise", () => {
+    render(<PlusPricing />);
+    expect(
+      screen.getByRole("link", { name: "Read our privacy promise" }),
+    ).toHaveAttribute("href", "#privacy");
   });
 
   it("follows the catalog when Copper Plus prices change", async () => {

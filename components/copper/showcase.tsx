@@ -1,3 +1,4 @@
+import { ArrowRightIcon } from "lucide-react";
 import Image from "next/image";
 import { getProducts } from "@/lib/copper/catalog";
 import { cn } from "@/lib/utils";
@@ -80,6 +81,13 @@ export function Showcase() {
                 <p className="font-heading mt-2 text-xl md:text-2xl">
                   {photo.caption}
                 </p>
+                <a
+                  href="#products"
+                  className="decoration-primary hover:decoration-foreground focus-visible:ring-ring mt-3 inline-flex h-11 items-center gap-1.5 rounded-sm font-medium underline decoration-2 underline-offset-4 outline-none focus-visible:ring-3"
+                >
+                  See {photo.product}
+                  <ArrowRightIcon aria-hidden className="size-4" />
+                </a>
               </figcaption>
             </figure>
           ))}

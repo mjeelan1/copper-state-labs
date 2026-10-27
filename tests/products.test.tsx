@@ -43,6 +43,18 @@ describe("Products", () => {
     }
   });
 
+  it("says who each product is best for and links on to the plans", () => {
+    render(<Products />);
+    for (const product of getProducts()) {
+      expect(cardFor(product.id)).toHaveTextContent("Best for:");
+      expect(cardFor(product.id)).toHaveTextContent("One-time price");
+    }
+    expect(screen.getByRole("link", { name: "Compare plans" })).toHaveAttribute(
+      "href",
+      "#plus",
+    );
+  });
+
   it("follows the catalog when prices change", async () => {
     vi.resetModules();
     vi.doMock("@/lib/copper/catalog", async (importOriginal) => {
@@ -51,12 +63,10 @@ describe("Products", () => {
       return {
         ...actual,
         getProducts: () =>
-          actual
-            .getProducts()
-            .map((product) => ({
-              ...product,
-              priceUsd: product.priceUsd + 50,
-            })),
+          actual.getProducts().map((product) => ({
+            ...product,
+            priceUsd: product.priceUsd + 50,
+          })),
       };
     });
     const { Products: Changed } = await import("@/components/copper/products");

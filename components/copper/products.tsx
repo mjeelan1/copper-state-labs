@@ -7,6 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { NextStep } from "@/components/copper/next-step";
 import { formatUsd, getProducts } from "@/lib/copper/catalog";
 
 // The product cutouts are square PNGs on transparent backgrounds.
@@ -22,7 +23,15 @@ const SWATCHES: Record<string, string> = {
   "Night Sky": "#1C2333",
 };
 
-// One card per catalog product: cutout, color swatches, name, price, features.
+// Who each product is for (Product Bible, section 3). A product not listed here
+// gets no "Best for" line.
+const BEST_FOR: Record<string, string> = {
+  "copper-home": "Households, families, retirees and snowbirds",
+  "copper-notes": "Students, professionals and anyone in lots of meetings",
+};
+
+// One card per catalog product: cutout, color swatches, name, price, who it's
+// best for and features, then a link on to the plans.
 export function Products() {
   const products = getProducts();
   return (
@@ -48,8 +57,8 @@ export function Products() {
                   alt={`${product.name} ${product.type} in ${product.colors[0]}`}
                   width={CUTOUT_SIZE}
                   height={CUTOUT_SIZE}
-                  sizes="256px"
-                  className="h-auto w-full max-w-64"
+                  sizes="(min-width: 768px) 256px, 192px"
+                  className="h-auto w-full max-w-48 md:max-w-64"
                 />
               </div>
               <ul
@@ -59,7 +68,7 @@ export function Products() {
                 {product.colors.map((color) => (
                   <li
                     key={color}
-                    className="text-muted-foreground flex items-center gap-2 text-xs"
+                    className="text-muted-foreground flex items-center gap-2 text-sm"
                   >
                     <span
                       aria-hidden
@@ -75,11 +84,22 @@ export function Products() {
                   <h3 className="text-xl font-bold">{product.name}</h3>
                 </CardTitle>
                 <CardDescription>{product.type}</CardDescription>
-                <CardAction className="text-2xl font-bold">
-                  {formatUsd(product.priceUsd)}
+                <CardAction className="text-right">
+                  <p className="text-2xl font-bold">
+                    {formatUsd(product.priceUsd)}
+                  </p>
+                  <p className="text-muted-foreground text-sm">
+                    One-time price
+                  </p>
                 </CardAction>
               </CardHeader>
               <CardContent>
+                {BEST_FOR[product.id] && (
+                  <p className="mb-4">
+                    <span className="font-semibold">Best for:</span>{" "}
+                    {BEST_FOR[product.id]}
+                  </p>
+                )}
                 <ul className="flex flex-col gap-3">
                   {product.features.map((feature) => (
                     <li key={feature.name}>
@@ -94,6 +114,11 @@ export function Products() {
             </Card>
           ))}
         </div>
+        <NextStep
+          text="Both work on the free plan. Copper Plus adds Refined answers and longer memory."
+          href="#plus"
+          label="Compare plans"
+        />
       </div>
     </section>
   );

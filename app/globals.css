@@ -76,7 +76,8 @@
   --destructive: oklch(0.577 0.245 27.325);
   --border: #e3d5bf;
   --input: #e3d5bf;
-  --ring: #b87333;
+  /* Focus rings use the text color, so they stand out on Copper and Sand. */
+  --ring: #1c2333;
   --chart-1: #b87333;
   --chart-2: #4a8c82;
   --chart-3: #e8663d;
@@ -111,7 +112,7 @@
   --destructive: oklch(0.704 0.191 22.216);
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
-  --ring: #b87333;
+  --ring: #efe3d0;
   --chart-1: #b87333;
   --chart-2: #4a8c82;
   --chart-3: #e8663d;

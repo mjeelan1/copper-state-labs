@@ -6,7 +6,11 @@ export function SiteFooter() {
   return (
     <footer data-testid="site-footer" className="bg-night-sky text-desert-sand">
       <div className="mx-auto flex max-w-5xl flex-col items-start gap-4 px-4 py-8 md:flex-row md:items-center md:justify-between">
-        <a href="#top" aria-label="Back to top">
+        <a
+          href="#top"
+          aria-label="Back to top"
+          className="focus-visible:ring-desert-sand inline-flex h-11 items-center rounded-sm outline-none focus-visible:ring-3"
+        >
           <Logo onDark className="w-36" />
         </a>
         <p className="text-desert-sand/70 text-sm">
