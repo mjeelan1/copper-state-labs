@@ -20,7 +20,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html
       lang="en"
       suppressHydrationWarning
-      className={cn("h-full antialiased", display.variable, body.variable)}
+      // Smooth in-page jumps that stop below the sticky header.
+      className={cn(
+        "h-full scroll-pt-24 antialiased motion-safe:scroll-smooth md:scroll-pt-16",
+        display.variable,
+        body.variable,
+      )}
     >
       <body className="flex min-h-full flex-col">
         <ThemeProvider

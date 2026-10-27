@@ -27,7 +27,7 @@ describe("npm run check", () => {
     ]);
   });
 
-  it("groups tests by criterion ID; a criterion passes only if all its tests pass", () => {
+  it("groups tests by criterion ID; a criterion passes only if all its tests pass; skipped tests aren't listed", () => {
     const criteria = criteriaFrom({
       testResults: [
         {
@@ -37,6 +37,7 @@ describe("npm run check", () => {
             result("AC-3.2 Two, first test", "passed"),
             result("AC-3.2 Two, second test", "failed"),
             result("helper without an ID", "passed"),
+            result("AC-0.1 Retired in this module", "skipped"),
           ],
         },
       ],

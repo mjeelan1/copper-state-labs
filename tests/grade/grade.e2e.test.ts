@@ -27,7 +27,7 @@ const LATE = "2026-11-05T12:00:00Z";
 const DEFAULT_LINE = "Week 0 check-in: Hello from Copper State Labs!";
 // Grades Module 0, which stays in specs/ on every branch.
 const MODULE_0 = readdirSync("specs").find((dir) => /^module-0(-|$)/.test(dir));
-// The starter's Week 0 page. Every fake student starts from this, so the test
+// The starter's Module 0 page. Every fake student starts from this, so the test
 // gives the same result on starter, solution and later-module branches.
 const STARTER_PAGE = `export default function Home() {
   return <p data-testid="week-0-line">${DEFAULT_LINE}</p>;
@@ -131,6 +131,10 @@ beforeAll(async () => {
     filter: (source) => !skip.test(relative(repo, source)),
   });
   writeFileSync(join(tmp, "template", "app/page.tsx"), STARTER_PAGE);
+  writeFileSync(
+    join(tmp, "template", "course.config.json"),
+    JSON.stringify({ module: 0, repoPrefix: "copper-m" }),
+  );
 
   makeStudent("ana", (dir) => editLine(dir, "Week 0 check-in: Hi, I'm Ana."));
   makeStudent("ben", (dir) => {

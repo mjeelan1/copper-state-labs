@@ -25,12 +25,15 @@ export function checkPaths(module, specDirs = readdirSync("specs")) {
  * Groups Vitest JSON results by acceptance-criterion ID (the "AC-x.y" at the
  * start of each test name). A criterion passes only if all its tests pass.
  */
+const SKIPPED = new Set(["skipped", "pending", "todo", "disabled"]);
+
 export function criteriaFrom(vitestJson) {
   const criteria = new Map();
   for (const file of vitestJson.testResults ?? []) {
     for (const test of file.assertionResults ?? []) {
       const match = /\b(AC-[\w.]+)\s*[:—-]?\s*(.*)/.exec(test.title);
-      if (!match) continue;
+      // Skipped tests (such as an earlier module's retired checks) aren't listed.
+      if (!match || SKIPPED.has(test.status)) continue;
       const [, id, description] = match;
       const entry = criteria.get(id) ?? { id, description, passed: true };
       if (test.status !== "passed") entry.passed = false;

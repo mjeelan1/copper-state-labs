@@ -93,6 +93,10 @@ beforeAll(async () => {
       filter: (source) => !skip.test(relative(repo, source)),
     });
     if (page) writeFileSync(join(dir, "app/page.tsx"), page);
+    writeFileSync(
+      join(dir, "course.config.json"),
+      JSON.stringify({ module: 0, repoPrefix: "copper-m" }),
+    );
     const git = (...args: string[]) =>
       execFileSync("git", args, {
         cwd: dir,

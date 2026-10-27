@@ -3,28 +3,9 @@ import { readdirSync, readFileSync } from "node:fs";
 import { PGlite } from "@electric-sql/pglite";
 import { vector } from "@electric-sql/pglite-pgvector";
 import { beforeAll, describe, expect, it } from "vitest";
+import { bibleTable } from "./helpers/bible";
 
 const BIBLE_TABLES = ["products", "plans", "assistant_versions", "ai_tiers"];
-
-// Reads a markdown table that follows a "### `name`" heading in the Bible.
-function bibleTable(name: string): Record<string, string>[] {
-  const bible = readFileSync("docs/copper-state-labs/product-bible.md", "utf8");
-  const section = bible.split(`### \`${name}\``)[1];
-  if (!section) throw new Error(`Table ${name} not found in the Bible`);
-  const lines = section.split("\n").map((line) => line.trim());
-  const start = lines.findIndex((line) => line.startsWith("|"));
-  const end = lines.findIndex((line, i) => i > start && !line.startsWith("|"));
-  const [header, , ...rows] = lines.slice(start, end === -1 ? undefined : end);
-  const cells = (line: string) =>
-    line
-      .slice(1, -1)
-      .split("|")
-      .map((cell) => cell.trim());
-  const columns = cells(header);
-  return rows.map((row) =>
-    Object.fromEntries(cells(row).map((value, i) => [columns[i], value])),
-  );
-}
 
 // Brings a database value and a Bible value to the same form.
 function same(dbValue: string, bibleValue: string): boolean {

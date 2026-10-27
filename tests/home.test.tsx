@@ -2,23 +2,14 @@ import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import Home from "@/app/page";
 
-describe("Placeholder home page", () => {
-  it("shows the logo, heading and under-construction line", () => {
+// Only what every version of the home page keeps: the placeholder (Module 0)
+// and the landing page (Module 1 on). Module specs test the rest.
+describe("Home page", () => {
+  it("shows the logo", () => {
     render(<Home />);
     expect(screen.getAllByAltText("Copper State Labs").length).toBeGreaterThan(
       0,
     );
-    expect(
-      screen.getByRole("heading", { level: 1, name: "Copper State Labs" }),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText("Our new site is under construction."),
-    ).toBeInTheDocument();
-  });
-
-  it("has the Week 0 line students edit", () => {
-    render(<Home />);
-    expect(screen.getByTestId("week-0-line")).toHaveTextContent(/\S/);
   });
 
   it("has the fictional-use footer", () => {

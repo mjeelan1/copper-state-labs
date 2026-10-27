@@ -8,7 +8,7 @@ import {
   rmSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { join, relative } from "node:path";
 import { brokenFiles } from "../../check-lib.mjs";
 import { runAsync } from "../proc.mjs";
 
@@ -64,7 +64,11 @@ export async function runVitest(ctx, paths, env) {
   for (const file of json.testResults ?? []) {
     for (const test of file.assertionResults ?? []) {
       const id = /\b(AC-[\w.]+)/.exec(test.title)?.[1];
-      if (!id) continue;
+      if (
+        !id ||
+        ["skipped", "pending", "todo", "disabled"].includes(test.status)
+      )
+        continue;
       const entry = byId.get(id) ?? {
         criterion: id,
         passed: true,
@@ -86,7 +90,7 @@ export async function runVitest(ctx, paths, env) {
   }));
   const errors = brokenFiles(json).map(
     (b) =>
-      `${b.file.replace(`${ctx.dir}/`, "")} could not run: ${b.message ?? "unknown error"}`,
+      `${relative(ctx.dir, b.file)} could not run: ${b.message ?? "unknown error"}`,
   );
   return { results, errors };
 }
