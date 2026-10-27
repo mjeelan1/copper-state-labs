@@ -43,6 +43,22 @@ function snapshot(progress: Progress): Progress {
   return { ...progress, steps: progress.steps.map((step) => ({ ...step })) };
 }
 
+/**
+ * Why a model call failed, for the terminal: the HTTP status and the
+ * provider's message (for example a retired model's 404), with any API key
+ * hidden. The shopper only ever sees the short apology.
+ */
+function failureReason(error: unknown): string {
+  const status = (error as { statusCode?: unknown } | null)?.statusCode;
+  const message = error instanceof Error ? error.message : String(error);
+  const reason = typeof status === "number" ? `${status} ${message}` : message;
+  const key = process.env.GOOGLE_GENERATIVE_AI_API_KEY?.trim();
+  return (key ? reason.split(key).join("[key hidden]") : reason).replace(
+    /AIza[0-9A-Za-z_-]{20,}/g,
+    "[key hidden]",
+  );
+}
+
 async function streamAnswer(
   { messages, useTools }: AskCopperRequest,
   live: ReturnType<typeof createLive<Progress>>,
@@ -131,7 +147,8 @@ async function streamAnswer(
 
     if (!progress.reply.trim()) progress.reply = NO_REPLY;
     progress.status = "done";
-  } catch {
+  } catch (error) {
+    console.error("[ask-copper] the answer failed:", failureReason(error));
     if (!progress.reply.trim()) progress.reply = FAILED;
     progress.status = "error";
   }
