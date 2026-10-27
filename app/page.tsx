@@ -11,8 +11,15 @@ export default function Home() {
   const products = getProducts();
   return (
     <>
+      {/* Hidden until a keyboard user tabs to it. */}
+      <a
+        href="#main"
+        className="bg-background text-foreground focus-visible:ring-ring sr-only rounded-md font-medium outline-none focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-60 focus:px-4 focus:py-3 focus-visible:ring-3"
+      >
+        Skip to content
+      </a>
       <SiteHeader />
-      <main className="flex-1">
+      <main id="main" tabIndex={-1} className="flex-1 outline-none">
         <Hero products={products} />
         <ProductsSection products={products} />
         <Showcase products={products} />
