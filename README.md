@@ -10,8 +10,8 @@ together; [`specs/`](specs/README.md) holds each module's work.
 
 _Fictional — for educational use._
 
-The app builds and runs with **no environment variables**. Pages that need
-Supabase or the AI gateway show a "Set up …" card until you add them.
+The app builds and runs with **no environment variables**. Pages that need a
+model key show a "Set up …" card until you add one.
 
 ## Local setup
 
@@ -25,14 +25,11 @@ Or open the repo in **GitHub Codespaces**: it installs everything and starts the
 
 ## Environment variables
 
-All are optional. Put them in `.env.local` (never commit it) and in your Vercel project settings.
+There is one, and it's optional until a module needs it. Put it in `.env.local` (never commit it) and in your Vercel project settings.
 
 | Variable                               | Used for                        | Where to find it                                                                   |
 | -------------------------------------- | ------------------------------- | ---------------------------------------------------------------------------------- |
-| `AI_GATEWAY_API_KEY`                   | All AI calls (`lib/ai/call.ts`) | Vercel dashboard > AI Gateway > API Keys                                           |
-| `NEXT_PUBLIC_SUPABASE_URL`             | Supabase database               | Supabase dashboard > Project Settings > API                                        |
-| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Supabase database               | Supabase dashboard > Project Settings > API Keys (publishable key)                 |
-| `SUPABASE_DB_URL`                      | `npm run db:migrate` only       | Supabase dashboard > Connect > Direct connection (includes your database password) |
+| `GOOGLE_GENERATIVE_AI_API_KEY`         | All AI calls (`lib/ai/call.ts`) | [Google AI Studio](https://aistudio.google.com) > Get API key (free, no card)      |
 
 ## Commands
 
@@ -43,14 +40,12 @@ All are optional. Put them in `.env.local` (never commit it) and in your Vercel 
 | `npm run check`                      | Show which acceptance criteria for the current module pass             |
 | `npm run lint` / `npm run typecheck` | Check code style and types                                             |
 | `npm run format`                     | Format the code with Prettier                                          |
-| `npm run db:migrate`                 | Apply `supabase/migrations` and the seed data to your Supabase project |
 | `npm run start-module`               | One-time setup after cloning a module branch                           |
 
 ## AI coding agents
 
 `CLAUDE.md` / `AGENTS.md` hold the rules for Claude Code and Codex. `.mcp.json`
-gives Claude Code three MCP servers: shadcn, Next.js docs (`next-devtools`) and
-Supabase (read-only).
+gives Claude Code two MCP servers: shadcn and Next.js docs (`next-devtools`).
 
 **Codex** doesn't read `.mcp.json`. Add the same servers to `~/.codex/config.toml`:
 
@@ -62,7 +57,4 @@ args = ["shadcn@4.21.4", "mcp"]
 [mcp_servers.next-devtools]
 command = "npx"
 args = ["-y", "next-devtools-mcp@0.4.0"]
-
-[mcp_servers.supabase]
-url = "https://mcp.supabase.com/mcp?read_only=true"
 ```

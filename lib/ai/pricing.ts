@@ -1,12 +1,10 @@
 import type { ModelId } from "@/lib/ai/models";
 
-// US dollars per million tokens: Anthropic list prices as of 2026-10.
-// The gateway may bill slightly differently; these are for cost estimates.
-// Claude Haiku 5.5's price is for prompts up to 100K tokens.
+// US dollars per million tokens: Google's list prices as of 2026-10.
+// Billing may differ slightly; these are for cost estimates.
 export const PRICING: Record<ModelId, { input: number; output: number }> = {
-  "anthropic/claude-haiku-5.5": { input: 0.1, output: 0.5 },
-  "anthropic/claude-sonnet-5.5": { input: 2, output: 10 },
-  "anthropic/claude-opus-5.5": { input: 4, output: 20 },
+  "google/gemini-2.5-flash": { input: 0.3, output: 2.5 },
+  "google/gemini-3-flash": { input: 0.5, output: 3 },
 };
 
 export function costUsd(

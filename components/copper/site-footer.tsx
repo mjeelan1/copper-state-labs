@@ -1,22 +1,21 @@
 import { Logo } from "@/components/copper/logo";
 
-// Night Sky in both modes, so the logo always uses its light-on-dark version.
-// On phones the logo sits above the fictional-use line.
+// Always Night Sky: the `dark` class gives the footer the dark theme (and the
+// light wordmark) in both light and dark mode.
 export function SiteFooter() {
   return (
-    <footer data-testid="site-footer" className="bg-night-sky text-desert-sand">
-      <div className="mx-auto flex max-w-5xl flex-col items-start gap-4 px-4 py-8 md:flex-row md:items-center md:justify-between">
-        <a
-          href="#top"
-          aria-label="Back to top"
-          className="focus-visible:ring-desert-sand inline-flex h-11 items-center rounded-sm outline-none focus-visible:ring-3"
-        >
-          <Logo onDark className="w-36" />
-        </a>
-        <p className="text-desert-sand/70 text-sm">
-          Fictional — for educational use.
-        </p>
-      </div>
-    </footer>
+    <div className="dark">
+      <footer
+        data-testid="site-footer"
+        className="bg-background text-foreground"
+      >
+        <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-4 py-10 sm:flex-row">
+          <Logo className="w-40" />
+          <p className="text-muted-foreground text-sm">
+            Fictional — for educational use.
+          </p>
+        </div>
+      </footer>
+    </div>
   );
 }

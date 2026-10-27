@@ -16,10 +16,9 @@ You are working with MBA students who are not that technical install any depende
 ## Code rules
 
 - Use the components in `components/ui` (shadcn) and `components/ai-elements` (AI Elements). Don't add other UI libraries.
-- All AI model calls go through `lib/ai/call.ts` (`callText` / `callObject`), so every call is logged to `ai_calls`. Never call a provider SDK or the gateway directly.
-- Pages that need Supabase or a model key must show `<SetupRequired />` when it isn't configured, never crash.
+- All AI model calls go through `lib/ai/call.ts` (`callText` / `callObject` / `callStream`), so every call is logged to `ai_calls`. Never call a provider SDK or the gateway directly.
+- Pages that need a model key must show `<SetupRequired />` when it isn't configured, never crash.
 - To add shadcn components, run `npx shadcn@4.21.4 add <name>`. To add AI Elements, always name them: `npx ai-elements@1.9.0 add <name>`. Running `npx ai-elements` without `add` installs the entire library.
-- Database changes go in a new file in `supabase/migrations/`; apply them with `npm run db:migrate`.
 
 ## Never
 

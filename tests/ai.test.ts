@@ -11,19 +11,10 @@ import {
 import { MODELS } from "@/lib/ai/models";
 import { costUsd, PRICING } from "@/lib/ai/pricing";
 
-const insert = vi.fn();
-let supabaseConfigured = false;
-
-vi.mock("@/lib/supabase/server", () => ({
-  createStatelessClient: () =>
-    supabaseConfigured ? { from: () => ({ insert }) } : null,
-}));
-
-// The gateway hands back whatever mock model the test sets.
+// Google hands back whatever mock model the test sets.
 let model: MockLanguageModelV4;
-vi.mock("ai", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("ai")>()),
-  createGateway: () => () => model,
+vi.mock("@ai-sdk/google", () => ({
+  createGoogleGenerativeAI: () => () => model,
 }));
 
 function replyWith(text: string, input = 1000, output = 200) {
@@ -45,10 +36,18 @@ function replyWith(text: string, input = 1000, output = 200) {
   });
 }
 
+/** Captures the rows printed as "[ai_calls] {...}". */
+function captureLog() {
+  const info = vi.spyOn(console, "info").mockImplementation(() => {});
+  return () =>
+    info.mock.calls
+      .filter(([tag]) => tag === "[ai_calls]")
+      .map(([, row]) => JSON.parse(row as string));
+}
+
 beforeEach(() => {
-  vi.stubEnv("AI_GATEWAY_API_KEY", "test-key");
-  supabaseConfigured = false;
-  insert.mockReset().mockResolvedValue({ error: null });
+  // An AI Studio key, from aistudio.google.com.
+  vi.stubEnv("GOOGLE_GENERATIVE_AI_API_KEY", "AIza-test-key");
 });
 afterEach(() => {
   vi.unstubAllEnvs();
@@ -61,45 +60,41 @@ describe("pricing", () => {
   });
 
   it("computes cost from tokens and price per million", () => {
-    // Sonnet 5.5: 1,000 x $2/M + 200 x $10/M = $0.004
-    expect(costUsd("anthropic/claude-sonnet-5.5", 1000, 200)).toBeCloseTo(
-      0.004,
+    // Gemini 2.5 Flash: 1,000 x $0.3/M + 200 x $2.5/M = $0.0008
+    expect(costUsd("google/gemini-2.5-flash", 1000, 200)).toBeCloseTo(
+      0.0008,
       9,
     );
   });
 });
 
 describe("lib/ai/call.ts", () => {
-  it("returns text and writes one ai_calls row with tokens, cost and latency", async () => {
-    supabaseConfigured = true;
+  it("returns text and logs one row with tokens, cost and latency", async () => {
+    const rows = captureLog();
     model = replyWith("Hello from Copper");
     const result = await callText(
-      {
-        module: 2,
-        feature: "review-radar",
-        model: "anthropic/claude-sonnet-5.5",
-      },
+      { module: 2, feature: "review-radar", model: "google/gemini-2.5-flash" },
       { prompt: "Say hello" },
     );
     expect(result.text).toBe("Hello from Copper");
-    expect(insert).toHaveBeenCalledTimes(1);
-    const row = insert.mock.calls[0][0];
-    expect(row).toMatchObject({
+    const logged = rows();
+    expect(logged).toHaveLength(1);
+    expect(logged[0]).toMatchObject({
       module: 2,
       feature: "review-radar",
-      model: "anthropic/claude-sonnet-5.5",
+      model: "google/gemini-2.5-flash",
       input_tokens: 1000,
       output_tokens: 200,
       ok: true,
     });
-    expect(row.cost_usd).toBeCloseTo(0.004, 9);
-    expect(row.latency_ms).toBeGreaterThanOrEqual(0);
-    expect(new Date(row.created_at).toString()).not.toBe("Invalid Date");
+    expect(logged[0].cost_usd).toBeCloseTo(0.0008, 9);
+    expect(logged[0].latency_ms).toBeGreaterThanOrEqual(0);
+    expect(new Date(logged[0].created_at).toString()).not.toBe("Invalid Date");
   });
 
   it("returns a typed object for structured calls", async () => {
+    captureLog();
     model = replyWith('{"category":"wake word","flag":false}');
-    vi.spyOn(console, "info").mockImplementation(() => {});
     const result = await callObject(
       { module: 2, feature: "classify-review" },
       {
@@ -110,58 +105,32 @@ describe("lib/ai/call.ts", () => {
     expect(result.output).toEqual({ category: "wake word", flag: false });
   });
 
-  it("logs to the console and doesn't throw when Supabase isn't set up", async () => {
-    model = replyWith("ok");
-    const info = vi.spyOn(console, "info").mockImplementation(() => {});
-    await expect(
-      callText({ module: 1, feature: "test" }, { prompt: "hi" }),
-    ).resolves.toBeDefined();
-    expect(insert).not.toHaveBeenCalled();
-    expect(info).toHaveBeenCalledWith(
-      "[ai_calls]",
-      expect.stringContaining('"feature":"test"'),
-    );
-  });
-
-  it("uses Claude Haiku 5.5 when no model is given", async () => {
-    supabaseConfigured = true;
+  it("uses Gemini 2.5 Flash when no model is given", async () => {
+    const rows = captureLog();
     model = replyWith("ok");
     await callText({ module: 1, feature: "test" }, { prompt: "hi" });
-    expect(insert.mock.calls[0][0].model).toBe("anthropic/claude-haiku-5.5");
+    expect(rows()[0].model).toBe("google/gemini-2.5-flash");
   });
 
   it("logs failed calls with ok: false and re-throws the error", async () => {
-    supabaseConfigured = true;
+    const rows = captureLog();
     model = new MockLanguageModelV4({
       doGenerate: async () => {
-        throw new Error("gateway down");
+        throw new Error("google down");
       },
     });
     await expect(
       callText({ module: 1, feature: "test" }, { prompt: "hi", maxRetries: 0 }),
-    ).rejects.toThrow("gateway down");
-    expect(insert.mock.calls[0][0]).toMatchObject({
+    ).rejects.toThrow("google down");
+    expect(rows()[0]).toMatchObject({
       ok: false,
       input_tokens: null,
       cost_usd: null,
     });
   });
 
-  it("keeps working when saving the log row fails", async () => {
-    supabaseConfigured = true;
-    insert.mockResolvedValue({ error: { message: "table missing" } });
-    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
-    model = replyWith("still ok");
-    const result = await callText(
-      { module: 1, feature: "test" },
-      { prompt: "hi" },
-    );
-    expect(result.text).toBe("still ok");
-    expect(warn).toHaveBeenCalled();
-  });
-
-  it("asks for the gateway key when it isn't set", async () => {
-    vi.stubEnv("AI_GATEWAY_API_KEY", "");
+  it("asks for the Google key when it isn't set", async () => {
+    vi.stubEnv("GOOGLE_GENERATIVE_AI_API_KEY", "");
     expect(isAiConfigured()).toBe(false);
     await expect(
       callText({ module: 1, feature: "test" }, { prompt: "hi" }),

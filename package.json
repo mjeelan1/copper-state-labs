@@ -13,20 +13,18 @@
     "typecheck": "next typegen && tsc --noEmit",
     "test": "vitest run",
     "format": "prettier --write .",
-    "db:migrate": "node --env-file-if-exists=.env.local scripts/db-migrate.mjs",
     "check": "node scripts/check.mjs",
     "start-module": "node scripts/start-module.mjs",
     "grade": "node scripts/grade/grade.mjs",
     "grade:docker": "node scripts/grade/docker.mjs"
   },
   "dependencies": {
+    "@ai-sdk/google": "4.0.93",
     "@hookform/resolvers": "5.9.1",
     "@streamdown/cjk": "1.0.4",
     "@streamdown/code": "2.0.0",
     "@streamdown/math": "1.0.3",
     "@streamdown/mermaid": "1.0.3",
-    "@supabase/ssr": "0.12.7",
-    "@supabase/supabase-js": "2.117.3",
     "@tanstack/react-table": "9.2.8",
     "ai": "7.0.137",
     "class-variance-authority": "0.7.1",
@@ -51,8 +49,6 @@
     "zod": "4.6.5"
   },
   "devDependencies": {
-    "@electric-sql/pglite": "0.5.8",
-    "@electric-sql/pglite-pgvector": "0.0.9",
     "@tailwindcss/turbopack": "4.3.3",
     "@testing-library/dom": "10.4.2",
     "@testing-library/jest-dom": "7.0.1",
@@ -66,7 +62,6 @@
     "eslint-config-prettier": "10.1.8",
     "jsdom": "30.1.2",
     "prettier": "3.9.10",
-    "supabase": "2.120.0",
     "tailwindcss": "4.3.3",
     "typescript": "5.9.3",
     "vitest": "5.0.3"

@@ -28,7 +28,7 @@ Install these once. You'll use them all semester.
 | Vercel account | Puts your app on the web | https://vercel.com/signup (sign up with GitHub) |
 | An AI coding agent | Your main way of working | Claude Code (or Codex) |
 
-You'll also need a **Supabase** account (database) and an **AI Gateway key** later in the course, not now. The app runs without them.
+You'll also need a free **Google AI Studio** key later in the course, not now. The app runs without it.
 
 Check your setup in a terminal:
 
@@ -42,7 +42,7 @@ gh auth status   # should say you're logged in
 
 ```bash
 cd ~/Developer        # or wherever you keep your projects
-git clone --branch module-0 https://github.com/CIS-591/class-examples.git copper-m0
+git clone --branch module-0 https://github.com/AliKefel/copper-state-labs-student.git copper-m0
 cd copper-m0
 npm run start-module  # creates github.com/YOUR-USERNAME/copper-m0 (public)
 npm ci
@@ -142,7 +142,7 @@ The repo comes set up for Claude Code and Codex.
 - **Plan first.** The agent shows a plan and waits for your approval. Read it before saying yes.
 - **Tests come with every change.** The agent runs `npm test` before saying it's done.
 - **Secrets stay secret.** The agent is blocked from reading `.env` files.
-- **MCP servers:** the first time you start Claude Code in the project, it asks you to approve three helpers: shadcn (UI components), next-devtools (Next.js docs) and supabase (read-only database access). Approve them.
+- **MCP servers:** the first time you start Claude Code in the project, it asks you to approve two helpers: shadcn (UI components) and next-devtools (Next.js docs). Approve them.
 - **Codex users:** Codex doesn't read the project's MCP file. The README has a snippet to paste into `~/.codex/config.toml`.
 
 ## Useful commands
@@ -158,7 +158,7 @@ The repo comes set up for Claude Code and Codex.
 
 ## Rules
 
-- **Never commit `.env` or `.env.local` files, and never paste a key or password into code.** Your repo is public: bots scan GitHub for leaked keys within minutes, and a leaked AI Gateway key spends real money. Keep keys only in `.env.local` and in Vercel. When you get an AI Gateway key later, set a spending limit on it.
+- **Never commit `.env` or `.env.local` files, and never paste a key or password into code.** Your repo is public: bots scan GitHub for leaked keys within minutes. Keep keys only in `.env.local` and in Vercel.
 - **Don't edit** `specs/*/tests`, `specs/*/evals` or `specs/*/rubric.md`. They're how your work is checked, and your instructor grades with their own copy.
 - **Don't "fix" the Product Bible.** Some facts in `docs/copper-state-labs/product-bible.md` deliberately conflict, like an old privacy policy that's still in the system. Later modules depend on them.
 - **Everything about Copper State Labs is fictional.** Don't use real company names, logos or products in your work.

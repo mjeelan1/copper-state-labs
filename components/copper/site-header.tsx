@@ -1,26 +1,35 @@
 import Link from "next/link";
 import { Logo } from "@/components/copper/logo";
 import { ModeToggle } from "@/components/copper/mode-toggle";
-import { SectionNav } from "@/components/copper/section-nav";
 
-// Sticky and slim. On phones the links drop to a second row under the logo.
-// Every link and button is at least 44px tall, so it's easy to tap.
+const LINKS = [
+  { href: "#products", label: "Products" },
+  { href: "#plus", label: "Copper Plus" },
+  { href: "#privacy", label: "Privacy" },
+];
+
 export function SiteHeader() {
   return (
     <header
       data-testid="site-header"
-      className="bg-background/95 sticky top-0 z-50 border-b backdrop-blur"
+      className="bg-background/90 sticky top-0 z-50 border-b backdrop-blur"
     >
-      <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-x-6 px-4 md:py-2">
-        <Link
-          href="/"
-          aria-label="Copper State Labs home"
-          className="focus-visible:ring-ring inline-flex h-11 items-center rounded-sm outline-none focus-visible:ring-3"
-        >
-          <Logo className="w-32 md:w-44" />
+      <div className="mx-auto flex max-w-6xl items-center justify-between gap-2 px-4 py-3 sm:gap-4">
+        <Link href="/" aria-label="Copper State Labs home" className="shrink-0">
+          <Logo className="w-28 sm:w-40" />
         </Link>
-        <SectionNav className="order-last flex w-full justify-center gap-2 md:order-none md:ml-auto md:w-auto" />
-        <ModeToggle />
+        <nav aria-label="Main" className="flex items-center gap-1 sm:gap-4">
+          {LINKS.map((link) => (
+            <a
+              key={link.href}
+              href={link.href}
+              className="text-foreground/80 hover:text-primary rounded-md px-1 py-1 text-sm font-medium whitespace-nowrap transition-colors sm:px-2"
+            >
+              {link.label}
+            </a>
+          ))}
+          <ModeToggle />
+        </nav>
       </div>
     </header>
   );

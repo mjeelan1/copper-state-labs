@@ -9,36 +9,32 @@ _Fictional — for educational use._
 ## The starter app (Module 0)
 
 A Next.js app that builds, runs and deploys with **no environment variables**.
-Supabase and the AI gateway are optional until a module needs them.
+A Google AI Studio key is optional until a module needs one.
 
 | Piece | Where | What it does |
 |---|---|---|
 | Pages | `app/` | `layout.tsx` sets the fonts and theme; `page.tsx` is the placeholder home page |
 | Brand components | `components/copper/` | `Logo`, `SiteHeader`, `SiteFooter`, `ModeToggle` |
 | UI kit | `components/ui/` (shadcn), `components/ai-elements/` (AI Elements) | The only UI libraries the app uses |
-| Setup card | `components/setup-required.tsx` | `<SetupRequired service="supabase" \| "ai" />`, shown instead of a page whose service isn't configured |
+| Setup card | `components/setup-required.tsx` | `<SetupRequired service="ai" />`, shown instead of a page whose service isn't configured |
 | Company catalog | `lib/copper/catalog.ts`, `lib/copper/data/catalog.json` | Product, plan and privacy facts from the Product Bible (Sections 3, 4, 8 and 10). Pages read prices and plan details from here instead of typing them (added in the Module 1 starter) |
-| Database helpers | `lib/supabase/` | `createClient()` for the server and the browser; returns `null` when Supabase isn't set up |
-| AI wrapper | `lib/ai/call.ts` | `callText` and `callObject`: every model call goes through these and is logged to `ai_calls` |
-| Models and prices | `lib/ai/models.ts`, `lib/ai/pricing.ts` | The approved models (Claude Haiku, Sonnet, Opus through the Vercel AI Gateway) and their token prices |
-| Database | `supabase/migrations/`, `supabase/seed.sql` | Company tables from the Product Bible (Section 10) plus `ai_calls` |
+| AI wrapper | `lib/ai/call.ts` | `callText` and `callObject`: every model call goes through these and is logged to the terminal |
+| Models and prices | `lib/ai/models.ts`, `lib/ai/pricing.ts` | The approved Gemini models and their token prices |
 | Module checks | `specs/module-N/`, `scripts/check.mjs` | Each module's spec, instructions, rubric and acceptance tests; `npm run check` runs them |
 
 ## Data flow
 
 1. A user opens a page in `app/`.
-2. Server code checks what's configured (`isSupabaseConfigured()`,
-   `isAiConfigured()`). If something is missing, the page renders
-   `<SetupRequired />` instead of crashing.
-3. Data comes from Supabase through `lib/supabase/server.ts`.
+2. Server code checks what's configured (`isAiConfigured()`). If the key is
+   missing, the page renders `<SetupRequired />` instead of crashing.
+3. Data comes from files under `lib/copper/data/`.
 4. AI requests go through `callText` / `callObject` in `lib/ai/call.ts`, which
-   calls the model through the AI Gateway and then writes one row to `ai_calls`:
-   `module`, `feature`, `model`, tokens, `cost_usd`, `latency_ms`, `ok`. Without
-   Supabase, the row is logged to the console instead.
+   calls Google and then prints one `[ai_calls]` line: `module`, `feature`,
+   `model`, tokens, `cost_usd`, `latency_ms`, `ok`.
 
 ```ts
 const { text } = await callText(
-  { module: 2, feature: "review-radar" },
+  { module: 2, feature: "ask-copper" },
   { prompt },
 );
 ```
@@ -76,7 +72,7 @@ When a module changes how the app fits together, add a section here:
 |---|---|---|
 | Page / route | `app/...` | |
 | Components | `components/...` | |
-| Data | `supabase/migrations/...` | Tables and columns added |
+| Data | `lib/copper/data/...` | Data files added |
 | AI calls | `lib/ai/call.ts` (module, feature) | Model, prompt purpose, expected cost per call |
 
 **Data flow:** user action → page → server code → database / model → response.

@@ -112,7 +112,7 @@ describe.skipIf(process.platform === "win32")("npm run grade:docker", () => {
     // Passed by name only: the token's value never appears in arguments.
     expect(args[args.indexOf("GH_TOKEN") - 1]).toBe("-e");
     expect(JSON.stringify(result.calls)).not.toContain(SECRET);
-    expect(args).not.toContain("GRADING_AI_GATEWAY_API_KEY");
+    expect(args).not.toContain("GRADING_GOOGLE_GENERATIVE_AI_API_KEY");
     expect(existsSync(join(tmp, "out"))).toBe(true);
   });
 
@@ -125,11 +125,11 @@ describe.skipIf(process.platform === "win32")("npm run grade:docker", () => {
   it("passes the grading AI key only with --evals", () => {
     const { run, base } = setup();
     const result = run([...base, "--evals"], {
-      GRADING_AI_GATEWAY_API_KEY: "grading-key-value",
+      GRADING_GOOGLE_GENERATIVE_AI_API_KEY: "grading-key-value",
     });
     expect(result.status, result.stderr).toBe(0);
     const args = result.runCall!;
-    expect(args[args.indexOf("GRADING_AI_GATEWAY_API_KEY") - 1]).toBe("-e");
+    expect(args[args.indexOf("GRADING_GOOGLE_GENERATIVE_AI_API_KEY") - 1]).toBe("-e");
     expect(args).toContain("--evals");
     expect(JSON.stringify(result.calls)).not.toContain("grading-key-value");
   });
@@ -151,7 +151,7 @@ describe.skipIf(process.platform === "win32")("npm run grade:docker", () => {
       "--evals has no grading key",
       {},
       { EVALS: "1" },
-      /--evals needs GRADING_AI_GATEWAY_API_KEY/,
+      /--evals needs GRADING_GOOGLE_GENERATIVE_AI_API_KEY/,
     ],
   ])("stops with a clear message when %s", (_, options, env, message) => {
     const { run, base } = setup(options);

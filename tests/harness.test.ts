@@ -23,13 +23,11 @@ describe("Agent harness", () => {
     );
   });
 
-  it("configures the shadcn, docs and read-only Supabase MCP servers", () => {
+  it("configures the shadcn and docs MCP servers", () => {
     expect(Object.keys(mcp.mcpServers).sort()).toEqual([
       "next-devtools",
       "shadcn",
-      "supabase",
     ]);
-    expect(mcp.mcpServers.supabase.url).toContain("read_only=true");
   });
 
   it("CLAUDE.md uses the same rules as AGENTS.md", () => {

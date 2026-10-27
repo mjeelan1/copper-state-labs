@@ -1,23 +1,24 @@
-import { createGateway, generateText, Output } from "ai";
+import { createGoogleGenerativeAI } from "@ai-sdk/google";
+import { generateText, Output, streamText } from "ai";
 import type { z } from "zod";
-import { DEFAULT_MODEL, type ModelId } from "@/lib/ai/models";
+import { defaultModel, MODELS, type ModelId } from "@/lib/ai/models";
 import { costUsd } from "@/lib/ai/pricing";
-import { createStatelessClient } from "@/lib/supabase/server";
 
 // Every model call in the app goes through this file, so each one is logged
-// to the ai_calls table (or the console when Supabase isn't set up).
+// with its tokens, cost and how long it took. The log goes to the terminal
+// running the app, as a line starting "[ai_calls]".
 
 export class AiNotConfiguredError extends Error {
   constructor() {
     super(
-      "Set up the AI gateway to use this feature: add AI_GATEWAY_API_KEY to .env.local.",
+      "Set up AI to use this feature: add GOOGLE_GENERATIVE_AI_API_KEY to .env.local.",
     );
     this.name = "AiNotConfiguredError";
   }
 }
 
 export function isAiConfigured(): boolean {
-  return Boolean(process.env.AI_GATEWAY_API_KEY);
+  return Boolean(process.env.GOOGLE_GENERATIVE_AI_API_KEY);
 }
 
 /** Which module and feature made the call, for the ai_calls log. */
@@ -45,28 +46,24 @@ export type AiCallRow = {
 };
 
 function languageModel(model: ModelId) {
-  const apiKey = process.env.AI_GATEWAY_API_KEY;
-  if (!apiKey) throw new AiNotConfiguredError();
-  return createGateway({ apiKey })(model);
+  const googleKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY?.trim();
+  if (!googleKey) throw new AiNotConfiguredError();
+  const entry = MODELS.find((m) => m.id === model);
+  const id =
+    entry && "googleId" in entry ? entry.googleId : model.slice("google/".length);
+  return createGoogleGenerativeAI({ apiKey: googleKey })(id);
 }
 
+/** Prints one line per model call, so the cost and time are visible. */
 async function logCall(row: AiCallRow): Promise<void> {
-  const supabase = createStatelessClient();
-  if (!supabase) {
-    console.info("[ai_calls]", JSON.stringify(row));
-    return;
-  }
-  const { error } = await supabase.from("ai_calls").insert(row);
-  // Logging must never break the feature that made the call.
-  if (error) console.warn("[ai_calls] could not save row:", error.message);
+  console.info("[ai_calls]", JSON.stringify(row));
 }
 
-async function tracked<
-  T extends { usage: { inputTokens?: number; outputTokens?: number } },
->(info: CallInfo, run: (model: ModelId) => Promise<T>): Promise<T> {
-  const model = info.model ?? DEFAULT_MODEL;
-  const started = performance.now();
-  const row = (ok: boolean, usage?: T["usage"]): AiCallRow => {
+type Usage = { inputTokens?: number; outputTokens?: number };
+
+/** Builds the ai_calls row for a call that started at `started`. */
+function rowFor(info: CallInfo, model: ModelId, started: number) {
+  return (ok: boolean, usage?: Usage): AiCallRow => {
     const input = usage?.inputTokens ?? null;
     const output = usage?.outputTokens ?? null;
     return {
@@ -84,6 +81,14 @@ async function tracked<
       created_at: new Date().toISOString(),
     };
   };
+}
+
+async function tracked<T extends { usage: Usage }>(
+  info: CallInfo,
+  run: (model: ModelId) => Promise<T>,
+): Promise<T> {
+  const model = info.model ?? defaultModel();
+  const row = rowFor(info, model, performance.now());
   try {
     const result = await run(model);
     await logCall(row(true, result.usage));
@@ -94,7 +99,7 @@ async function tracked<
   }
 }
 
-/** Generates text. Example: callText({ module: 2, feature: "review-radar" }, { prompt }) */
+/** Generates text. Example: callText({ module: 3, feature: "support-answer" }, { prompt }) */
 export async function callText(info: CallInfo, options: TextOptions) {
   return tracked(info, (model) =>
     generateText({ ...options, model: languageModel(model) }),
@@ -115,3 +120,36 @@ export async function callObject<Schema extends z.ZodType>(
     }),
   );
 }
+
+type StreamOptions = DistributiveOmit<
+  Parameters<typeof streamText>[0],
+  "model" | "output" | "onFinish" | "onError"
+>;
+
+/**
+ * Streams a reply: read `result.fullStream` to see each step as it happens
+ * (thinking, tool calls, tool results, text). Logged to ai_calls when it ends.
+ * Example: callStream({ module: 2, feature: "ask-copper" }, { messages })
+ */
+export function callStream(info: CallInfo, options: StreamOptions) {
+  const model = info.model ?? defaultModel();
+  const row = rowFor(info, model, performance.now());
+  return streamText({
+    ...options,
+    model: languageModel(model),
+    onFinish: ({ totalUsage }) => logCall(row(true, totalUsage)),
+    onError: () => logCall(row(false)),
+  });
+}
+
+// Asking for some thinking (rather than letting the model decide) is what
+// makes Gemini write a summary even for an easy question.
+const THINKING = { includeThoughts: true, thinkingBudget: 1024 };
+
+/**
+ * Asks Gemini to include a summary of its thinking in the stream (as
+ * reasoning parts). Other models ignore it. Pass as `providerOptions`.
+ */
+export const THOUGHT_SUMMARIES = {
+  google: { thinkingConfig: THINKING },
+};
