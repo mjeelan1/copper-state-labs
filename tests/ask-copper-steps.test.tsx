@@ -117,6 +117,76 @@ describe("Ask Copper stations", () => {
     ).toBeInTheDocument();
   });
 
+  it("shows a compare_billing card with both totals, the cheaper one and the savings", () => {
+    render(
+      <Answer
+        useTools
+        progress={{
+          status: "done",
+          reply: "Yearly is cheaper.",
+          steps: [
+            {
+              type: "tool",
+              id: "1",
+              name: "compare_billing",
+              state: "done",
+              input: { plan: "copper-plus", years: 1 },
+              output: {
+                plan: "Copper Plus",
+                years: 1,
+                monthlyTotalUsd: 95.88,
+                annualTotalUsd: 79,
+                cheaper: "annual",
+                savingsUsd: 16.88,
+              },
+            },
+          ],
+        }}
+      />,
+    );
+    const card = within(screen.getByTestId("tool-call"));
+    expect(card.getByText("Comparing monthly and yearly")).toBeInTheDocument();
+    expect(card.getByText("Copper Plus")).toBeInTheDocument();
+    expect(card.getByText("Copper Plus over 1 year")).toBeInTheDocument();
+    expect(card.getByText("$95.88")).toBeInTheDocument();
+    expect(card.getByText("$79")).toBeInTheDocument();
+    expect(card.getByText("Paid yearly")).toHaveTextContent("Cheaper");
+    expect(card.getByText("You save")).toBeInTheDocument();
+    expect(card.getByText("$16.88")).toBeInTheDocument();
+  });
+
+  it("says when monthly and yearly cost the same", () => {
+    render(
+      <Answer
+        useTools
+        progress={{
+          status: "done",
+          reply: "Free is free.",
+          steps: [
+            {
+              type: "tool",
+              id: "1",
+              name: "compare_billing",
+              state: "done",
+              input: { plan: "free", years: 2 },
+              output: {
+                plan: "Free",
+                years: 2,
+                monthlyTotalUsd: 0,
+                annualTotalUsd: 0,
+                cheaper: "same",
+                savingsUsd: 0,
+              },
+            },
+          ],
+        }}
+      />,
+    );
+    expect(screen.getByText("Both ways cost the same")).toBeInTheDocument();
+    expect(screen.queryByText("You save")).toBeNull();
+    expect(screen.queryByText("Cheaper")).toBeNull();
+  });
+
   it("marks a tools-off answer and lists no tools", () => {
     render(
       <Answer

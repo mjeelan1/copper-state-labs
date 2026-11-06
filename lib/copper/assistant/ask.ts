@@ -10,7 +10,7 @@ import { callStream, THOUGHT_SUMMARIES } from "@/lib/ai/call";
 import { createLive, type Live } from "@/lib/ai/live";
 import { COPPER_INSTRUCTIONS } from "@/lib/copper/assistant/instructions";
 import type { Progress, ToolStep } from "@/lib/copper/assistant/progress";
-import { copperTools } from "@/lib/copper/assistant/tools";
+import { copperTools, extensionTools } from "@/lib/copper/assistant/tools";
 
 export type ChatMessage = { role: "user" | "assistant"; content: string };
 
@@ -73,15 +73,16 @@ async function streamAnswer(
 
   try {
     // With tools off, the model gets only the conversation: no instructions
-    // and no tools, so nothing tells it to check. Thought summaries go both
-    // ways, so the panel can show it thinking in either chat.
+    // and no tools, so nothing tells it to check. With tools on it gets the
+    // four course tools plus the extension's compare_billing. Thought
+    // summaries go both ways, so the panel can show it thinking in either chat.
     const result = callStream(
       { module: 2, feature: "ask-copper" },
       useTools
         ? {
             instructions: COPPER_INSTRUCTIONS,
             messages,
-            tools: copperTools,
+            tools: { ...copperTools, ...extensionTools },
             stopWhen: stepCountIs(MAX_STEPS),
             providerOptions: THOUGHT_SUMMARIES,
           }

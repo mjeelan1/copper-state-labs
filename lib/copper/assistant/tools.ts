@@ -1,7 +1,7 @@
-// Module 2: the four tools Ask Copper can use. Products and prices come from
-// lib/copper/catalog.ts and stock from lib/copper/inventory.ts, so the
-// chatbot never has to make them up.
-// The contract for each tool is in specs/module-2/spec.md.
+// Module 2: the four tools Ask Copper can use, plus compare_billing from the
+// Module 2 extension. Products and prices come from lib/copper/catalog.ts and
+// stock from lib/copper/inventory.ts, so the chatbot never has to make them up.
+// The contract for the first four is in specs/module-2/spec.md.
 import { tool, type ToolSet } from "ai";
 import { z } from "zod";
 import {
@@ -42,6 +42,19 @@ export type CalculateCostInput = {
 export type CostBreakdown = {
   lines: { item: string; usd: number }[];
   totalUsd: number;
+};
+
+export type CompareBillingInput = { plan: Plan["id"]; years: number };
+
+export type BillingComparison = {
+  plan: string;
+  years: number;
+  monthlyTotalUsd: number;
+  annualTotalUsd: number;
+  /** Which way of paying costs less, or "same" when they cost the same. */
+  cheaper: "monthly" | "annual" | "same";
+  /** How much the cheaper way saves; 0 when they cost the same. */
+  savingsUsd: number;
 };
 
 export type CheckAvailabilityInput = { product: ProductId; color?: string };
@@ -137,6 +150,52 @@ export function calculateCost(input: CalculateCostInput): CostBreakdown {
   return { lines, totalUsd };
 }
 
+export const compareBillingInput: z.ZodType<CompareBillingInput> = z.object({
+  plan: planId.describe("The subscription plan to compare."),
+  years: z
+    .number()
+    .int()
+    .min(1)
+    .max(5)
+    .describe(
+      "How many years to compare over, 1 to 5. Use 1 if the shopper doesn't say.",
+    ),
+});
+
+/**
+ * compare_billing (Module 2 extension): one plan paid monthly vs. yearly over
+ * some years, which costs less and by how much. Both totals come from
+ * calculateCost, so the pricing math lives in one place.
+ */
+export function compareBilling(input: CompareBillingInput): BillingComparison {
+  const plan = getPlans().find((p) => p.id === input.plan);
+  if (!plan) throw new Error(`${input.plan} isn't a Copper plan`);
+  const totalFor = (billing: "monthly" | "annual") =>
+    calculateCost({
+      products: [],
+      plan: input.plan,
+      billing,
+      years: input.years,
+    }).totalUsd;
+
+  const monthlyTotalUsd = totalFor("monthly");
+  const annualTotalUsd = totalFor("annual");
+  const cheaper =
+    annualTotalUsd < monthlyTotalUsd
+      ? "annual"
+      : monthlyTotalUsd < annualTotalUsd
+        ? "monthly"
+        : "same";
+  return {
+    plan: plan.name,
+    years: input.years,
+    monthlyTotalUsd,
+    annualTotalUsd,
+    cheaper,
+    savingsUsd: cents(Math.abs(monthlyTotalUsd - annualTotalUsd)),
+  };
+}
+
 export const checkAvailabilityInput: z.ZodType<CheckAvailabilityInput> =
   z.object({
     product: productId.describe("The product to check."),
@@ -226,5 +285,19 @@ export const copperTools = {
       "Checks today's stock for one Copper product, or one of its colors: in stock, low stock, or back-ordered with its restock date.",
     inputSchema: checkAvailabilityInput,
     execute: (input) => checkAvailability(input),
+  }),
+} satisfies ToolSet;
+
+/**
+ * Tools added in the Module 2 extension. They're kept apart from copperTools,
+ * which the course's checks expect to hold exactly the original four; askCopper
+ * sends both sets with tools on.
+ */
+export const extensionTools = {
+  compare_billing: tool({
+    description:
+      "Compares paying for a plan monthly vs. yearly over 1 to 5 years: both totals, which costs less and how much the cheaper way saves. Use it for any monthly-or-yearly or savings question.",
+    inputSchema: compareBillingInput,
+    execute: async (input) => compareBilling(input),
   }),
 } satisfies ToolSet;

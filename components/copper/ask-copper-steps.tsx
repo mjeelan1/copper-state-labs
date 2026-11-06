@@ -311,6 +311,12 @@ function sentRows(name: string, input: unknown): [string, string][] {
       ["Color", fields.color ? String(fields.color) : "Every color"],
     ];
   }
+  if (name === "compare_billing") {
+    return [
+      ["Plan", planName(fields.plan)],
+      ["Years", String(fields.years ?? "")],
+    ];
+  }
   return Object.entries(fields).map(([key, value]) => [
     key.charAt(0).toUpperCase() + key.slice(1),
     Array.isArray(value) ? value.join(", ") : String(value),
@@ -361,8 +367,16 @@ type Availability =
     }
   | { status: "not_a_color"; product: string; color: string; colors: string[] }
   | { status: "unavailable"; message: string };
+type BillingComparison = {
+  plan: string;
+  years: number;
+  monthlyTotalUsd: number;
+  annualTotalUsd: number;
+  cheaper: "monthly" | "annual" | "same";
+  savingsUsd: number;
+};
 
-const has = (value: unknown, key: string) => key in asRecord(value);
+const has =(value: unknown, key: string) => key in asRecord(value);
 
 function CameBack({ step }: { step: ToolStep }) {
   if (step.state === "calling") {
@@ -382,6 +396,8 @@ function CameBack({ step }: { step: ToolStep }) {
     return <PricesResult prices={output as Prices} />;
   if (step.name === "check_availability" && has(output, "status"))
     return <AvailabilityResult availability={output as Availability} />;
+  if (step.name === "compare_billing" && has(output, "savingsUsd"))
+    return <BillingResult comparison={output as BillingComparison} />;
   return (
     <p className="font-mono text-sm break-all">{JSON.stringify(output)}</p>
   );
@@ -405,6 +421,49 @@ function CostResult({ cost }: { cost: Cost }) {
         <span className="text-primary text-2xl font-bold tabular-nums">
           {formatUsd(cost.totalUsd)}
         </span>
+      </div>
+    </div>
+  );
+}
+
+/** compare_billing: both totals, the cheaper one marked, and what it saves. */
+function BillingResult({ comparison }: { comparison: BillingComparison }) {
+  const years = comparison.years === 1 ? "1 year" : `${comparison.years} years`;
+  const rows = [
+    ["monthly", "Paid monthly", comparison.monthlyTotalUsd],
+    ["annual", "Paid yearly", comparison.annualTotalUsd],
+  ] as const;
+  return (
+    <div>
+      <p className="text-muted-foreground text-sm">
+        {comparison.plan} over {years}
+      </p>
+      <ul className="mt-1 flex flex-col gap-1">
+        {rows.map(([billing, label, usd]) => (
+          <li key={billing} className="flex items-center justify-between gap-4">
+            <span className="flex items-center gap-2">
+              {label}
+              {comparison.cheaper === billing && (
+                <span className="bg-accent text-accent-foreground rounded-full px-2 text-sm font-medium">
+                  Cheaper
+                </span>
+              )}
+            </span>
+            <span className="font-medium tabular-nums">{formatUsd(usd)}</span>
+          </li>
+        ))}
+      </ul>
+      <div className="mt-2 flex items-baseline justify-between border-t pt-2">
+        {comparison.cheaper === "same" ? (
+          <span className="font-semibold">Both ways cost the same</span>
+        ) : (
+          <>
+            <span className="font-semibold">You save</span>
+            <span className="text-primary text-2xl font-bold tabular-nums">
+              {formatUsd(comparison.savingsUsd)}
+            </span>
+          </>
+        )}
       </div>
     </div>
   );

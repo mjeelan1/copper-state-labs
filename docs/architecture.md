@@ -104,6 +104,32 @@ panel as a fresh `Progress` copy through `createLive()` / `readLive()`.
 - Thought summaries are shown to shoppers as-is; they can be wrong even when the
   final answer is right.
 
+## Module 2 extension: compare_billing
+
+**Summary:** a fifth tool, `compare_billing`, so Copper answers "monthly or
+yearly?" and "how much would I save?" from a tool instead of doing the math in
+its reply. Lives on the `copper-m2-ext` branch.
+
+| Piece | Where | What it does |
+|---|---|---|
+| Tool | `lib/copper/assistant/tools.ts` | `compare_billing({ plan, years })` in `extensionTools`: both totals, which is cheaper, and the savings. Gets both totals from `calculateCost`, so the pricing math lives in one place. Read-only |
+| Server Action | `lib/copper/assistant/ask.ts` | With tools on, sends `{ ...copperTools, ...extensionTools }`: five tools. Tools off still sends none |
+| Components | `lib/copper/assistant/progress.ts`, `components/copper/ask-copper-steps.tsx` | Adds the tool to the "Tools Copper can use" list and draws its card: both totals, a **Cheaper** pill and "You save" |
+| Instructions | `lib/copper/assistant/instructions.ts` | Tells Copper to use `compare_billing` for monthly-or-yearly and savings questions |
+| Tests | `tests/compare-billing.test.ts`, `tests/ask-copper-steps.test.tsx` | Totals, the Free plan, catalog price changes, rejected input, the tool reaching the model, and the card |
+
+**Decisions and trade-offs:**
+- `copperTools` keeps exactly the course's four tools, so AC-M2.8 still
+  passes. The fifth tool sits in its own `extensionTools` object.
+- AC-M2.14 expects the model to receive exactly four tools, so it fails on this
+  branch by design: `npm run check` shows 26 of 27 here. The graded branches
+  (`copper-m2`, `main`) are unchanged at 27 of 27.
+
+**Risks and open questions:**
+- Copper can still skip the tool and do the math itself; the instructions name
+  `compare_billing` to make that less likely, and the tool card shows when it
+  was used.
+
 ## Adding a module
 
 When a module changes how the app fits together, add a section here:
