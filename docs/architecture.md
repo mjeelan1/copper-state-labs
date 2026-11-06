@@ -77,13 +77,14 @@ on offer, its thinking, each tool call, the reply) as the answer streams in.
 | Server Action | `lib/copper/assistant/ask.ts` | `askCopper({ messages, useTools })` returns a live `Progress` straight away and fills it in from the stream |
 | Tools | `lib/copper/assistant/tools.ts` | `get_products`, `get_prices`, `calculate_cost`, `check_availability`, each with a zod input contract. Read-only |
 | Instructions | `lib/copper/assistant/instructions.ts` | `COPPER_INSTRUCTIONS`, the system prompt, sent only with tools on |
-| Data | `lib/copper/data/inventory.json` | Stock per product color, read fresh by `readInventory()` on every check |
+| Data | Supabase `inventory` table (`supabase/migrations/`, `supabase/seed.sql`) | Stock per product color, read fresh by `readInventory()` in `lib/copper/inventory.ts` on every check (part 2). Readable with the publishable key, writable by nobody through the app |
+| Settings | `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | In `.env.local` and in Vercel (Production and Preview). Without them, stock "can't be checked right now" instead of crashing |
 | AI calls | `lib/ai/call.ts` (module 2, `ask-copper`) | `callStream` to Gemini 2.5 Flash with thought summaries, up to 5 steps. Roughly $0.002–$0.005 per question (an estimate; the real cost is in each `[ai_calls]` line) |
 
 **Data flow:** shopper asks in the panel → `askCopper` Server Action →
-`callStream` → Gemini picks a tool → the tool reads the catalog or the stock
-list → the result goes back to Gemini → the reply. Each step is pushed to the
-panel as a fresh `Progress` copy through `createLive()` / `readLive()`.
+`callStream` → Gemini picks a tool → the tool reads the catalog or the Supabase
+stock table → the result goes back to Gemini → the reply. Each step is pushed to
+the panel as a fresh `Progress` copy through `createLive()` / `readLive()`.
 
 **Decisions and trade-offs:**
 - Tools compute prices, totals and stock; the model only chooses tools and
@@ -99,8 +100,12 @@ panel as a fresh `Progress` copy through `createLive()` / `readLive()`.
 - The model can still pick the wrong inputs (for example monthly instead of
   annual). The tool card shows exactly what it sent, so a shopper or the Copper
   Crew can spot it.
-- Stock is only as current as `inventory.json`; when it can't be read, the tool
+- Stock is as current as the Supabase table: a change in the Table Editor shows
+  up on the next question, with no commit or deploy. When it can't be read
+  (keys missing, or the free project paused after a week without use), the tool
   says so instead of guessing.
+- Anyone with the Supabase login can change stock, so that login is now as
+  sensitive as the code.
 - Thought summaries are shown to shoppers as-is; they can be wrong even when the
   final answer is right.
 
