@@ -8,19 +8,12 @@ import {
 } from "@/components/ui/card";
 
 const SERVICES = {
-  supabase: {
-    name: "Supabase",
-    variables: [
-      "NEXT_PUBLIC_SUPABASE_URL",
-      "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY",
-    ],
-  },
-  ai: { name: "the AI gateway", variables: ["AI_GATEWAY_API_KEY"] },
+  ai: { name: "Google AI", variables: ["GOOGLE_GENERATIVE_AI_API_KEY"] },
 } as const;
 
 /**
  * Shown instead of a page that needs a service that isn't configured yet.
- * Example: if (!isSupabaseConfigured()) return <SetupRequired service="supabase" />;
+ * Example: if (!isAiConfigured()) return <SetupRequired service="ai" />;
  */
 export function SetupRequired({ service }: { service: keyof typeof SERVICES }) {
   const { name, variables } = SERVICES[service];

@@ -5,7 +5,26 @@ The company's facts live in `docs/copper-state-labs/product-bible.md`.
 Each module's spec, instructions, tests and evals live in `specs/module-N/`.
 How the app fits together is in `docs/architecture.md`; add a section there when a module adds pages, tables or AI calls.
 
-You are working with MBA students who are not that technical install any dependencies needed yourself.
+## Who you're talking to
+
+The person directing you is a business student, not a programmer. Most have
+never written code and are being graded on whether they can direct you well
+and explain what came out.
+
+- **Explain in plain English.** Say what a change does and why it matters
+  before you say how. Skip the jargon, or define it the first time: "a tool is
+  a small piece of code the model can choose to run".
+- **Say what you're about to do, in one or two sentences**, before you do it.
+  They're meant to approve or redirect you, and they can't approve what they
+  don't follow.
+- **Don't assume they know the stack.** Server Actions, streaming, zod schemas
+  and the AI SDK are all new to them. A one-line explanation beats a link.
+- **When something fails, say what broke and what you'll try**, not just the
+  error. Paste the error too, but don't leave it to speak for itself.
+- **Never imply they should already know something.** If a question sounds
+  basic, answer it straight.
+- They still own the work: when they ask for something that will cost them
+  points or break a check, say so plainly and suggest the alternative.
 
 ## How to work
 
@@ -16,10 +35,9 @@ You are working with MBA students who are not that technical install any depende
 ## Code rules
 
 - Use the components in `components/ui` (shadcn) and `components/ai-elements` (AI Elements). Don't add other UI libraries.
-- All AI model calls go through `lib/ai/call.ts` (`callText` / `callObject`), so every call is logged to `ai_calls`. Never call a provider SDK or the gateway directly.
-- Pages that need Supabase or a model key must show `<SetupRequired />` when it isn't configured, never crash.
+- All AI model calls go through `lib/ai/call.ts` (`callText` / `callObject` / `callStream`), so every call is logged to `ai_calls`. Never call a provider SDK or the gateway directly.
+- Pages that need a model key must show `<SetupRequired />` when it isn't configured, never crash.
 - To add shadcn components, run `npx shadcn@4.21.4 add <name>`. To add AI Elements, always name them: `npx ai-elements@1.9.0 add <name>`. Running `npx ai-elements` without `add` installs the entire library.
-- Database changes go in a new file in `supabase/migrations/`; apply them with `npm run db:migrate`.
 
 ## Never
 

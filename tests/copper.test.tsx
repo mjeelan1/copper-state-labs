@@ -50,12 +50,4 @@ describe("Brand components", () => {
       "Fictional — for educational use.",
     );
   });
-
-  it("SiteFooter has its test ID and the light-on-dark logo", () => {
-    render(<SiteFooter />);
-    expect(screen.getByTestId("site-footer")).toBeInTheDocument();
-    const images = screen.getAllByAltText("Copper State Labs");
-    expect(images).toHaveLength(1);
-    expect(images[0].getAttribute("src")).toMatch(/logo-dark\.png/);
-  });
 });

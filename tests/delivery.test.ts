@@ -8,12 +8,7 @@ describe("Delivery files", () => {
   it("README has setup steps and every environment variable, and no Deploy button", () => {
     const readme = read("README.md");
     expect(readme).not.toContain("vercel.com/new/clone");
-    for (const variable of [
-      "AI_GATEWAY_API_KEY",
-      "NEXT_PUBLIC_SUPABASE_URL",
-      "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY",
-      "SUPABASE_DB_URL",
-    ]) {
+    for (const variable of ["GOOGLE_GENERATIVE_AI_API_KEY"]) {
       expect(readme).toContain(variable);
     }
     expect(readme).toContain("~/.codex/config.toml");
@@ -62,7 +57,6 @@ describe("Delivery files", () => {
       "start-module",
       "grade",
       "grade:docker",
-      "db:migrate",
     ]) {
       expect(scripts[name], name).toBeDefined();
     }

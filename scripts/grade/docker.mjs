@@ -6,7 +6,7 @@
 //   npm run grade:docker -- --module 0 --roster ~/cis591/roster.csv \
 //     --deadline 2026-10-20T23:59-07:00
 //
-// The container gets only: GH_TOKEN, GRADING_AI_GATEWAY_API_KEY (with --evals),
+// The container gets only: GH_TOKEN, GRADING_GOOGLE_GENERATIVE_AI_API_KEY (with --evals),
 // the roster and hidden tests (read-only) and the results folder.
 import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync } from "node:fs";
@@ -65,7 +65,7 @@ export function dockerRunArgs(opts, { root, moduleNumber }) {
   const env = ["-e", "GH_TOKEN", "-e", `GRADE_OUT_LABEL=${out}`];
   if (opts.evals) {
     grade.push("--evals");
-    env.push("-e", "GRADING_AI_GATEWAY_API_KEY");
+    env.push("-e", "GRADING_GOOGLE_GENERATIVE_AI_API_KEY");
   }
   return {
     out,
@@ -119,8 +119,8 @@ function main() {
       "set GH_TOKEN to a read-only GitHub token first (see teaching.md, " +
         '"Grading"). Never use your own login token.',
     );
-  if (opts.evals && !process.env.GRADING_AI_GATEWAY_API_KEY)
-    fail("--evals needs GRADING_AI_GATEWAY_API_KEY (a grading-only key)");
+  if (opts.evals && !process.env.GRADING_GOOGLE_GENERATIVE_AI_API_KEY)
+    fail("--evals needs GRADING_GOOGLE_GENERATIVE_AI_API_KEY (a grading-only key)");
   if (spawnSync("docker", ["info"], { stdio: "ignore" }).status !== 0)
     fail("Docker isn't running. Start Docker Desktop and try again.");
 

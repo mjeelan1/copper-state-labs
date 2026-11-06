@@ -311,7 +311,7 @@ A **router** decides which tier handles each request. On Copper Plus households,
 
 ---
 
-## 10. Database Tables (Supabase)
+## 10. Database Tables
 
 ### `products`
 
@@ -341,3 +341,16 @@ A **router** decides which tier handles each request. On Copper Plus households,
 | On-device | Device | 0.000 | 0.000 | Free, Copper Plus |
 | Raw Ore | Copper Cloud | 0.002 | 0.004 | Free, Copper Plus |
 | Refined | Copper Cloud (frontier models) | 0.020 | 0.030 | Copper Plus only |
+
+### `inventory`
+
+Stock on hand for each product color, and the date of its next shipment. Stock changes every day; these are the levels on the day the Ask Copper chatbot launched (October 2026). Fewer than 10 units counts as **low stock**; 0 units is **back-ordered** until the next shipment arrives.
+
+| sku | product | color | units_in_stock | next_shipment |
+|---|---|---|---|---|
+| CH-POL | Copper Home | Polished Copper | 240 | 2026-11-20 |
+| CH-TEA | Copper Home | Patina Teal | 6 | 2026-11-06 |
+| CH-NSK | Copper Home | Night Sky | 185 | 2026-11-20 |
+| CN-BRC | Copper Notes | Brushed Copper | 310 | 2026-11-13 |
+| CN-DSA | Copper Notes | Desert Sand | 92 | 2026-11-13 |
+| CN-NSK | Copper Notes | Night Sky | 0 | 2026-11-14 |

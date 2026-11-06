@@ -1,13 +1,16 @@
-import { BackToTop } from "@/components/copper/back-to-top";
-import { Hero } from "@/components/copper/hero";
-import { PlusPricing } from "@/components/copper/plus-pricing";
-import { Privacy } from "@/components/copper/privacy";
-import { Products } from "@/components/copper/products";
-import { Showcase } from "@/components/copper/showcase";
+import { AskCopper } from "@/components/copper/ask-copper";
+import { Hero } from "@/components/copper/landing/hero";
+import { PlusPricing } from "@/components/copper/landing/plus-pricing";
+import { PrivacySummary } from "@/components/copper/landing/privacy-summary";
+import { ProductsSection } from "@/components/copper/landing/products-section";
+import { Showcase } from "@/components/copper/landing/showcase";
 import { SiteFooter } from "@/components/copper/site-footer";
 import { SiteHeader } from "@/components/copper/site-header";
+import { isAiConfigured } from "@/lib/ai/call";
+import { getPlans, getPrivacySummary, getProducts } from "@/lib/copper/catalog";
 
 export default function Home() {
+  const products = getProducts();
   return (
     <>
       {/* Hidden until a keyboard user tabs to it. */}
@@ -19,14 +22,15 @@ export default function Home() {
       </a>
       <SiteHeader />
       <main id="main" tabIndex={-1} className="flex-1 outline-none">
-        <Hero />
-        <Products />
-        <Showcase />
-        <PlusPricing />
-        <Privacy />
+        <Hero products={products} />
+        <ProductsSection products={products} />
+        <Showcase products={products} />
+        <PlusPricing plans={getPlans()} />
+        <PrivacySummary privacy={getPrivacySummary()} />
       </main>
       <SiteFooter />
-      <BackToTop />
+      {/* The panel can't read the server-only key, so it's told here. */}
+      <AskCopper aiConfigured={isAiConfigured()} />
     </>
   );
 }

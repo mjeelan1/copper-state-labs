@@ -9,7 +9,7 @@
 //   --hidden <dir>         hidden tests: <dir>/<module folder>/*.test.ts(x)
 //   --out <dir>            default: .grading/module-<n> (gitignored)
 //   --concurrency <n>      students graded at once (default: half your CPU cores)
-//   --evals                also run AI evals (needs GRADING_AI_GATEWAY_API_KEY)
+//   --evals                also run AI evals (needs GRADING_GOOGLE_GENERATIVE_AI_API_KEY)
 //   --only <a,b>           grade only these GitHub usernames
 //   --no-cache             grade everyone again
 //   --keep                 keep the temporary checkouts (for debugging)

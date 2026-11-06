@@ -77,11 +77,11 @@ describe("module grading config", () => {
 describe("grader helpers", () => {
   it("runs student code without keys or tokens from your shell", () => {
     const original = { ...process.env };
-    process.env.AI_GATEWAY_API_KEY = "secret";
+    process.env.GOOGLE_GENERATIVE_AI_API_KEY = "secret";
     process.env.GH_TOKEN = "secret";
     try {
       const env: Record<string, string | undefined> = safeEnv();
-      expect(env.AI_GATEWAY_API_KEY).toBeUndefined();
+      expect(env.GOOGLE_GENERATIVE_AI_API_KEY).toBeUndefined();
       expect(env.GH_TOKEN).toBeUndefined();
       expect(env.PATH).toBe(process.env.PATH);
     } finally {

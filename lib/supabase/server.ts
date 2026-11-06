@@ -1,39 +1,15 @@
-import { createServerClient } from "@supabase/ssr";
+// The Supabase client for server code. Module 2 only ever reads, and has no
+// login, so one plain client is all it needs. Returns null when Supabase isn't
+// set up, so callers can say "I can't check that right now" instead of crashing.
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
-import { cookies } from "next/headers";
 import { supabaseConfig } from "@/lib/supabase/config";
 
 export { isSupabaseConfigured } from "@/lib/supabase/config";
 
 /**
- * Supabase client for Server Components, Server Actions and Route Handlers.
- * Returns null if Supabase isn't set up.
- */
-export async function createClient() {
-  const config = supabaseConfig();
-  if (!config) return null;
-  const cookieStore = await cookies();
-  return createServerClient(config.url, config.key, {
-    cookies: {
-      getAll() {
-        return cookieStore.getAll();
-      },
-      setAll(cookiesToSet) {
-        try {
-          cookiesToSet.forEach(({ name, value, options }) =>
-            cookieStore.set(name, value, options),
-          );
-        } catch {
-          // Server Components can't set cookies; safe to ignore until auth is added in a later module.
-        }
-      },
-    },
-  });
-}
-
-/**
- * Supabase client without cookies, for server code that runs outside a request
- * (for example, logging in lib/ai/call.ts). Returns null if Supabase isn't set up.
+ * A Supabase client for server code that runs outside a request (a tool, a
+ * Server Action). Returns null if Supabase isn't set up.
+ * Example: const supabase = createStatelessClient(); if (!supabase) return null;
  */
 export function createStatelessClient() {
   const config = supabaseConfig();

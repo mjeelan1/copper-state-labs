@@ -26,7 +26,7 @@ Each module starts in a new repo. Your `copper-m0` repo stays as it is.
 
 ```bash
 cd ~/Developer        # or wherever you keep your projects
-git clone --branch module-1 https://github.com/CIS-591/class-examples.git copper-m1
+git clone --branch module-1 https://github.com/AliKefel/copper-state-labs-student.git copper-m1
 cd copper-m1
 npm run start-module  # creates github.com/YOUR-USERNAME/copper-m1 (public)
 npm ci
